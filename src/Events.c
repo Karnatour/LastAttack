@@ -9,15 +9,15 @@ int poolEvent(SDL_Event *event) {
 void handleEvent(Game *game) {
     switch (game->eventHandler->event.type) {
         case SDL_QUIT:
-            LOG_INFO("recived EVENT: SDL_QUIT\n");
+            LOG_INFO("Recived EVENT: SDL_QUIT\n");
             game->isRunning = false;
             break;
         case SDL_KEYDOWN:
-            LOG_INFO("recived EVENT: SDL_KEYDOWN KEY: %c\n",game->eventHandler->event.key.keysym.sym);
+            LOG_INFO("Recived EVENT: SDL_KEYDOWN KEY: %c\n",game->eventHandler->event.key.keysym.sym);
             game->onKeyPressed(game->eventHandler->event.key.keysym);
             break;
         case SDL_KEYUP:
-            LOG_INFO("recived EVENT: SDL_KEYDOUP\n");
+            LOG_INFO("Recived EVENT: SDL_KEYDOUP\n");
             break;
     }
 }

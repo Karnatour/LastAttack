@@ -14,8 +14,29 @@ add_executable(LastAttack
         src/Events.h
         src/Callbacks/InputCallbacks.c
         src/Callbacks/InputCallbacks.h
+        src/Texture.c
+        src/Texture.h
 )
 
 add_subdirectory(vendor/SDL)
 target_include_directories(LastAttack PUBLIC vendor/SDL/include)
-target_link_libraries(LastAttack PUBLIC SDL2::SDL2main SDL2::SDL2-static)
+
+add_subdirectory(vendor/SDL_image)
+target_include_directories(LastAttack PUBLIC vendor/SDL_image/include)
+
+if(TARGET SDL2::SDL2main)
+target_link_libraries(LastAttack PRIVATE SDL2::SDL2main)
+endif()
+
+target_link_libraries(LastAttack PRIVATE SDL2_image::SDL2_image)
+target_link_libraries(LastAttack PRIVATE SDL2::SDL2)
+
+if (WIN32)
+    add_custom_command(
+        TARGET LastAttack POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:LastAttack>"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2_image::SDL2_image>" "$<TARGET_FILE_DIR:LastAttack>"
+        VERBATIM
+    )
+endif()
+

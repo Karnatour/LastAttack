@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdbool.h>
 #include "SDL_render.h"
 #include "SDL_video.h"
@@ -6,21 +7,23 @@
 
 struct EventHandler;
 
-typedef struct Game{
+typedef struct Game {
     SDL_Renderer *renderer;
     SDL_Window *window;
-    SDL_Surface *surface;
     bool isRunning;
     struct EventHandler *eventHandler;
+    //TODO: Probably move KeyCallback to Callback handler
     KeyCallback onKeyPressed;
 } Game;
 
-Game* allocateGame();
-static void freeGame(Game* game);
+Game *allocateGame();
 
-void initGame(Game* game);
-void runGame(Game* game);
-void exitGame(Game* game);
+static void freeGame(Game *game);
 
-static void testNullCallbacksAssign(Game *game);
-static void assignCallbacks(Game* game);
+void initGame(Game *game);
+
+void runGame(Game *game);
+
+void exitGame(Game *game);
+
+static void assignCallbacks(Game *game);
