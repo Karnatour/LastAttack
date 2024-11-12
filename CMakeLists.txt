@@ -24,19 +24,23 @@ target_include_directories(LastAttack PUBLIC vendor/SDL/include)
 add_subdirectory(vendor/SDL_image)
 target_include_directories(LastAttack PUBLIC vendor/SDL_image/include)
 
-if(TARGET SDL2::SDL2main)
-target_link_libraries(LastAttack PRIVATE SDL2::SDL2main)
-endif()
+set(SDL2TTF_VENDORED ON)
+add_subdirectory(vendor/SDL_ttf)
+target_include_directories(LastAttack PUBLIC vendor/SDL_ttf)
 
-target_link_libraries(LastAttack PRIVATE SDL2_image::SDL2_image)
-target_link_libraries(LastAttack PRIVATE SDL2::SDL2)
+
+if (TARGET SDL2::SDL2main)
+    target_link_libraries(LastAttack PRIVATE SDL2::SDL2main)
+endif ()
+
+target_link_libraries(LastAttack PRIVATE SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf)
 
 if (WIN32)
     add_custom_command(
-        TARGET LastAttack POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:LastAttack>"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2_image::SDL2_image>" "$<TARGET_FILE_DIR:LastAttack>"
-        VERBATIM
+            TARGET LastAttack POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:LastAttack>"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2_image::SDL2_image>" "$<TARGET_FILE_DIR:LastAttack>"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2_ttf::SDL2_ttf>" "$<TARGET_FILE_DIR:LastAttack>"
+            VERBATIM
     )
-endif()
-
+endif ()
