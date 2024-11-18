@@ -2,6 +2,8 @@
 
 #include "SDL_keyboard.h"
 
-typedef void (*KeyCallback)(SDL_Keysym key);
+struct Game;
 
-void keyPressed(SDL_Keysym key);
+typedef void (*KeyCallback)(SDL_Keysym key,struct Game* game);
+
+void keyPressed(SDL_Keysym key,struct Game* game);

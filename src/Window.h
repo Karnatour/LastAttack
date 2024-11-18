@@ -10,7 +10,8 @@ SDL_Renderer * createRenderer(SDL_Window *window);
 
 SDL_Surface* getWindowSurface(SDL_Window* window);
 void updateWindowSurface(SDL_Window* window);
+void changeTitle(SDL_Window* window, const char* title);
+
 
 void destroyWindow(SDL_Window* window);
 void destroyRenderer(SDL_Renderer *renderer);
-void exitSDL();

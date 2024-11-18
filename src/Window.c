@@ -14,7 +14,7 @@ SDL_Window *createWindow() {
 }
 
 SDL_Renderer *createRenderer(SDL_Window *window) {
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
         LOG_ERROR("Unable to create SDL renderer %s\n", SDL_GetError());
     } else {
@@ -44,14 +44,14 @@ void initSDL() {
 
 void destroyRenderer(SDL_Renderer *renderer) {
     SDL_DestroyRenderer(renderer);
-    LOG_INFO("Destryoed SDL Renderer\n");
+    LOG_INFO("[WINDOW] 1/2 Destryoed SDL Renderer\n");
+}
+
+void changeTitle(SDL_Window* window, const char* title) {
+    SDL_SetWindowTitle(window,title);
 }
 
 void destroyWindow(SDL_Window *window) {
     SDL_DestroyWindow(window);
-    LOG_INFO("Destroyed SDL Window\n");
-}
-
-void exitSDL() {
-    SDL_Quit();
+    LOG_INFO("[WINDOW] 2/2 Destroyed SDL Window\n");
 }

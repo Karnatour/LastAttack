@@ -14,10 +14,10 @@ void handleEvent(Game *game) {
             break;
         case SDL_KEYDOWN:
             LOG_INFO("Recived EVENT: SDL_KEYDOWN KEY: %c\n",game->eventHandler->event.key.keysym.sym);
-            game->onKeyPressed(game->eventHandler->event.key.keysym);
+            game->onKeyPressed(game->eventHandler->event.key.keysym,game);
             break;
         case SDL_KEYUP:
-            LOG_INFO("Recived EVENT: SDL_KEYDOUP\n");
+            LOG_INFO("Recived EVENT: SDL_KEYUP KEY: %c\n",game->eventHandler->event.key.keysym.sym);
             break;
     }
 }

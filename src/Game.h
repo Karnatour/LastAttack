@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
 #include "SDL_render.h"
 #include "SDL_video.h"
 #include "Callbacks/InputCallbacks.h"
@@ -14,6 +13,8 @@ typedef struct Game {
     struct EventHandler *eventHandler;
     //TODO: Probably move KeyCallback to Callback handler
     KeyCallback onKeyPressed;
+    double deltaTime;
+    Uint64 last;
 } Game;
 
 Game *allocateGame();
