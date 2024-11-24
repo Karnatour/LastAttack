@@ -16,6 +16,8 @@ add_executable(LastAttack
         src/Callbacks/InputCallbacks.h
         src/Texture.c
         src/Texture.h
+        src/Enemy.c
+        src/Enemy.h
 )
 
 add_subdirectory(vendor/SDL)
