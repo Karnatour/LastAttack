@@ -2,9 +2,8 @@
 #include "Logger.h"
 #include "SDL.h"
 #include "SDL_image.h"
-
 SDL_Window *createWindow() {
-    SDL_Window *window = SDL_CreateWindow("Last attack", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 500, 500, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Last attack", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_SHOWN);
     if (window == nullptr) {
         LOG_ERROR("Unable to create SDL window %s\n", SDL_GetError());
     } else {

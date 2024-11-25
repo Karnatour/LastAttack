@@ -3,28 +3,24 @@
 
 #include <SDL_image.h>
 
+#include "Enemy.h"
 #include "Events.h"
 #include "Logger.h"
 #include "Texture.h"
 #include "Window.h"
 
+Texture* temp;
+
+Vec2 path[4] = {{100.0f, 100.0f}, {400.0f, 100.0f}, {600.0f, 500.0f}, {800.0f, 500.0f}};
+Enemy enemyTest;
+
 Game* allocateGame() {
     Game* game = malloc(sizeof(Game));
     if (game) {
-        LOG_INFO("[ALLOCATION] 1/2 Allocated memory for game struct\n");
+        LOG_INFO("[ALLOCATION] 1/1 Allocated memory for game struct\n");
     }
     else {
         LOG_ERROR("Error while allocating memory for game struct\n");
-        return nullptr;
-    }
-
-    game->eventHandler = malloc(sizeof(EventHandler));
-    if (game->eventHandler) {
-        LOG_INFO("[ALLOCATION] 2/2 Allocated memory for game->eventHandler struct\n");
-    }
-    else {
-        LOG_ERROR("Error while allocating memory for game->eventHandler struct\n");
-        free(game);
         return nullptr;
     }
     return game;
@@ -41,29 +37,40 @@ void initGame(Game* game) {
     game->deltaTime = 0;
     game->last = SDL_GetPerformanceCounter();
     LOG_INFO("----------Game initialized------------\n");
+    temp = createAndLoadTexture(game->renderer, "../assets/brick.png");
+    enemyTest.speed = 100.0f;
+    enemyTest.pathIndex = 0;
+    enemyTest.coords.x = 0;
+    enemyTest.coords.y = 100;
 }
 
 
+
 void runGame(Game* game) {
-    while (poolEvent(&game->eventHandler->event)) {
+    while (poolEvent(&game->eventHandler.event)) {
         handleEvent(game);
     }
+
+    SDL_RenderClear(game->renderer);
 
     //TODO: Remove in release
     //--------------------------------------------
     Uint64 currentTime = SDL_GetPerformanceCounter();
-    game->deltaTime = (currentTime - game->last) / (double)SDL_GetPerformanceFrequency();
+    game->deltaTime = (float)(currentTime - game->last) / (float)SDL_GetPerformanceFrequency();
     game->last = currentTime;
     char title[128];
     sprintf(title, "%.1f", 1 / game->deltaTime);
     changeTitle(game->window, title);
     //--------------------------------------------
 
+    printf("%f %f\n",enemyTest.coords.x,enemyTest.coords.y);
 
-    SDL_Rect fillRect = {50, 50, 50, 50};
-    SDL_SetRenderDrawColor(game->renderer, 255, 0, 0, 255);
+    if (enemyTest.pathIndex < 4){
+    moveEnemy(&enemyTest, path, game->deltaTime);
+    }
+    SDL_Rect fillRect = {(int)enemyTest.coords.x, (int)enemyTest.coords.y, 32*3, 32*3};
     SDL_RenderFillRect(game->renderer, &fillRect);
-
+    SDL_RenderCopy(game->renderer, temp->texture, nullptr, &fillRect);
 
     SDL_RenderPresent(game->renderer);
 }
@@ -82,10 +89,8 @@ void exitGame(Game* game) {
 }
 
 void freeGame(Game* game) {
-    free(game->eventHandler);
-    LOG_INFO("[DEALLOCATION] 1/2 Released memory of game->eventHandler struct\n");
     free(game);
-    LOG_INFO("[DEALLOCATION] 2/2 Released memory of game struct\n");
+    LOG_INFO("[DEALLOCATION] 1/1 Released memory of game struct\n");
 }
 
 void assignCallbacks(Game* game) {

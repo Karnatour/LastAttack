@@ -1,35 +1,30 @@
 #pragma once
 
-typedef struct{
-    int x,y;
-}Point;
-
-typedef struct{
-    float x,y;
-}Vec2;
+typedef struct {
+    float x, y;
+} Vec2;
 
 typedef enum {
-  DIRECTION_UP,
-  DIRECTION_DOWN,
-  DIRECTION_LEFT,
-  DIRECTION_RIGHT
+    DIRECTION_UP,
+    DIRECTION_DOWN,
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT
 } Direction;
 
-typedef struct{
-    Point coords;
+typedef struct {
+    Vec2 coords;
     int pathIndex;
+    Direction direction;
     float hp;
     float speed;
-    Direction direction;
     int active;
-    Point* path;
-}Enemy;
+} Enemy;
 
-typedef enum{
+typedef enum {
     LOCATION_TOP,
     LOCATION_CAVE,
-    LOCATION_SHIP,
-}SpawnLocation;
+    LOCATION_TEMPLE,
+} SpawnLocation;
 
 Enemy* createEnemy();
-void moveEnemy(Enemy*enemy,Point* path,double deltaTime);
+void moveEnemy(Enemy* enemy, const Vec2* path, float deltaTime);

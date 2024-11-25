@@ -10,3 +10,9 @@
 	path = vendor/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf.git
 	branch = SDL2
+[submodule "vendor/tmx"]
+	path = vendor/tmx
+	url = https://github.com/baylej/tmx.git
+[submodule "vendor/libxml2"]
+	path = vendor/libxml2
+	url = https://github.com/GNOME/libxml2.git
