@@ -2,17 +2,20 @@
 #include "Game.h"
 
 #include <SDL_image.h>
+#include <stdbool.h>
 
+#include "Config.h"
 #include "Enemy.h"
 #include "Events.h"
 #include "Logger.h"
+#include "MapLoader.h"
 #include "Texture.h"
 #include "Window.h"
 
-Texture* temp;
-
-Vec2 path[4] = {{100.0f, 100.0f}, {400.0f, 100.0f}, {600.0f, 500.0f}, {800.0f, 500.0f}};
-Enemy enemyTest;
+SDL_Texture* temp;
+Enemy* enemyTest = NULL;
+Enemy* enemyTest2 = NULL;
+Enemy* enemyTest3 = NULL;
 
 Game* allocateGame() {
     Game* game = malloc(sizeof(Game));
@@ -21,7 +24,7 @@ Game* allocateGame() {
     }
     else {
         LOG_ERROR("Error while allocating memory for game struct\n");
-        return nullptr;
+        return NULL;
     }
     return game;
 }
@@ -32,19 +35,22 @@ void initGame(Game* game) {
     initSDL();
     game->window = createWindow();
     game->renderer = createRenderer(game->window);
-
     game->isRunning = true;
     game->deltaTime = 0;
     game->last = SDL_GetPerformanceCounter();
     LOG_INFO("----------Game initialized------------\n");
-    temp = createAndLoadTexture(game->renderer, "../assets/brick.png");
-    enemyTest.speed = 100.0f;
-    enemyTest.pathIndex = 0;
-    enemyTest.coords.x = 0;
-    enemyTest.coords.y = 100;
+
+    setPaths(&game->paths);
+    temp = createAndLoadTexture(game->renderer, "../assets/orc1_walk_full.png");
+    SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
+
+    enemyTest = createEnemy(LOCATION_TOP, TOP_SPAWN_POINT.x, TOP_SPAWN_POINT.y, 100.0f, 100.0f);
+    enemyTest2 = createEnemy(LOCATION_TOP, LAKE_SPAWN_POINT.x, LAKE_SPAWN_POINT.y, 100.0f, 100.0f);
+    enemyTest3 = createEnemy(LOCATION_TOP, BOTTOM_SPAWN_POINT.x, BOTTOM_SPAWN_POINT.y, 100.0f, 100.0f);
+
+    initMapLoader(game);
+    game->map.tmxMap = loadMap("Tiled_files/Undead_land.tmx");
 }
-
-
 
 void runGame(Game* game) {
     while (poolEvent(&game->eventHandler.event)) {
@@ -53,25 +59,31 @@ void runGame(Game* game) {
 
     SDL_RenderClear(game->renderer);
 
-    //TODO: Remove in release
-    //--------------------------------------------
     Uint64 currentTime = SDL_GetPerformanceCounter();
     game->deltaTime = (float)(currentTime - game->last) / (float)SDL_GetPerformanceFrequency();
     game->last = currentTime;
+
     char title[128];
-    sprintf(title, "%.1f", 1 / game->deltaTime);
-    changeTitle(game->window, title);
-    //--------------------------------------------
-
-    printf("%f %f\n",enemyTest.coords.x,enemyTest.coords.y);
-
-    if (enemyTest.pathIndex < 4){
-    moveEnemy(&enemyTest, path, game->deltaTime);
+    if (game->deltaTime > 0) {
+        sprintf(title, "%.1f FPS", 1.0f / game->deltaTime);
     }
-    SDL_Rect fillRect = {(int)enemyTest.coords.x, (int)enemyTest.coords.y, 32*3, 32*3};
-    SDL_RenderFillRect(game->renderer, &fillRect);
-    SDL_RenderCopy(game->renderer, temp->texture, nullptr, &fillRect);
-
+    else {
+        sprintf(title, "FPS: N/A");
+    }
+    changeTitle(game->window, title);
+    if (enemyTest->pathIndex < TOP_PATH_LENGTH) {
+        moveEnemy(enemyTest, game->paths.topPath, game->deltaTime);
+    }
+    if (enemyTest2->pathIndex < LAKE_PATH_LENGTH) {
+        moveEnemy(enemyTest2, game->paths.lakePath, game->deltaTime);
+    }
+    if (enemyTest3->pathIndex < BOTTOM_PATH_LENGTH) {
+        moveEnemy(enemyTest3, game->paths.bottomPath, game->deltaTime);
+    }
+    renderMap(&game->map, game->renderer,game->deltaTime);
+    renderEnemy(enemyTest,game->renderer,&game->paths,game->deltaTime,temp);
+    renderEnemy(enemyTest2,game->renderer,&game->paths,game->deltaTime,temp);
+    renderEnemy(enemyTest3,game->renderer,&game->paths,game->deltaTime,temp);
     SDL_RenderPresent(game->renderer);
 }
 
@@ -85,6 +97,10 @@ void exitGame(Game* game) {
     IMG_Quit();
     SDL_Quit();
 
+
+    free(enemyTest);
+    freeMap(&game->map);
+    freePaths(&game->paths);
     freeGame(game);
 }
 

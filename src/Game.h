@@ -4,6 +4,10 @@
 #include "SDL_render.h"
 #include "SDL_video.h"
 #include "Callbacks/InputCallbacks.h"
+#include <stdbool.h>
+
+#include "Enemy.h"
+#include "MapLoader.h"
 
 struct EventHandler;
 
@@ -14,13 +18,16 @@ typedef struct Game {
     EventHandler eventHandler;
     //TODO: Probably move KeyCallback to Callback handler
     KeyCallback onKeyPressed;
+    //TODO: Create Time struct
     float deltaTime;
     Uint64 last;
+    Map map;
+    Paths paths;
 } Game;
 
 Game *allocateGame();
 
-static void freeGame(Game *game);
+void freeGame(Game *game);
 
 void initGame(Game *game);
 
@@ -28,4 +35,4 @@ void runGame(Game *game);
 
 void exitGame(Game *game);
 
-static void assignCallbacks(Game *game);
+void assignCallbacks(Game *game);
