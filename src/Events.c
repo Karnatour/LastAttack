@@ -20,10 +20,11 @@ void handleEvent(Game* game) {
             LOG_DEBUG("Recived EVENT: SDL_KEYUP KEY: %c\n", game->eventHandler.event.key.keysym.sym);
             break;
         case SDL_MOUSEMOTION:
-            LOG_DEBUG("Recived EVENT: SDL_MOUSEMOTION X:%d Y:%d\n",game->eventHandler.event.motion.x,game->eventHandler.event.motion.y);
+            //LOG_DEBUG("Recived EVENT: SDL_MOUSEMOTION X:%d Y:%d\n",game->eventHandler.event.motion.x,game->eventHandler.event.motion.y);
             break;
         case SDL_MOUSEBUTTONUP:
-            LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTONUP BUTTON: %d\n",game->eventHandler.event.button.button);
+            //LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTONUP BUTTON: %d\n",game->eventHandler.event.button.button);
+            game->onMousePressed(game->eventHandler.event.motion.x,game->eventHandler.event.motion.y,game);
             break;
         case SDL_MOUSEBUTTONDOWN:
             LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTDOWN BUTTON: %d\n",game->eventHandler.event.button.button);

@@ -23,18 +23,18 @@ add_executable(LastAttack
         src/Utils.c
         src/Utils.h
         src/Config.h
+        src/Towers.c
+        src/Towers.h
 )
 
-add_executable(test
-    src/test.c
-)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 
-find_package(SDL2 CONFIG REQUIRED)
-find_package(SDL2_image CONFIG REQUIRED)
-find_package(SDL2_ttf CONFIG REQUIRED)
-find_package(sdl2-gfx CONFIG REQUIRED)
-find_package(tmx CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_gfx REQUIRED)
 
+add_subdirectory(tmx-tmx_1.10.0)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
@@ -44,20 +44,6 @@ endif ()
 
 target_include_directories(LastAttack PRIVATE ${SDL2_INCLUDE_DIRS})
 target_link_libraries(LastAttack PRIVATE
-        SDL2::SDL2
-        SDL2::SDL2main
-        SDL2_image::SDL2_image
-        SDL2_ttf::SDL2_ttf
-        SDL2::SDL2_gfx
-        tmx
+        SDL2::Main SDL2::Image SDL2::GFX tmx m
 )
 
-target_include_directories(test PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(test PRIVATE
-        SDL2::SDL2
-        SDL2::SDL2main
-        SDL2_image::SDL2_image
-        SDL2_ttf::SDL2_ttf
-        SDL2::SDL2_gfx
-        tmx
-)

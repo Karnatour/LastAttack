@@ -1,15 +1,13 @@
 #include "Enemy.h"
 #include <math.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include "Config.h"
 #include "Logger.h"
 
 
-
-Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, const float hp, const float speed) {
-    Enemy* enemy = NULL;
-    enemy = (Enemy*)malloc(sizeof(Enemy));
+Enemy *createEnemy(SpawnLocation spawnLocation, const float x, const float y, const float hp, const float speed) {
+    Enemy *enemy = NULL;
+    enemy = (Enemy *) malloc(sizeof(Enemy));
     enemy->active = true;
     enemy->pathIndex = 0;
     enemy->hp = hp;
@@ -17,23 +15,27 @@ Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, co
     enemy->coords.x = x;
     enemy->coords.y = y;
     //TODO: Set direction by spawn
-    enemy->direction = DIRECTION_RIGHT;
+    enemy->location = spawnLocation;
+    switch (enemy->location) {
+        case LOCATION_TOP:
+            enemy->direction = DIRECTION_DOWN;
+            break;
+        case LOCATION_LAKE:
+            enemy->direction = DIRECTION_UP;
+            break;
+        case LOCATION_BOTTOM:
+            enemy->direction = DIRECTION_LEFT;
+            break;
+    }
     return enemy;
 }
 
-void moveEnemy(Enemy* enemy, const Vec2* path, const float deltaTime) {
+void moveEnemy(Enemy *enemy, const Vec2 *path, const float deltaTime) {
     Vec2 target = path[enemy->pathIndex];
-    Vec2 distanceVec;
-    distanceVec.x = target.x - enemy->coords.x;
-    distanceVec.y = target.y - enemy->coords.y;
-    float distance = sqrtf(distanceVec.x * distanceVec.x + distanceVec.y * distanceVec.y);
-
-    if (distance < MIN_THRESHOLD) { // Snap to target if very close
-        enemy->coords.x = target.x;
-        enemy->coords.y = target.y;
-        ++enemy->pathIndex;
-        return;
-    }
+    Vec2 directionVec;
+    directionVec.x = target.x - enemy->coords.x;
+    directionVec.y = target.y - enemy->coords.y;
+    float distance = sqrtf(directionVec.x * directionVec.x + directionVec.y * directionVec.y);
 
     float moveDistance = fmaxf(enemy->speed * deltaTime, MIN_THRESHOLD);
 
@@ -43,41 +45,28 @@ void moveEnemy(Enemy* enemy, const Vec2* path, const float deltaTime) {
         ++enemy->pathIndex;
     } else {
         Vec2 normalizedDistanceVec;
-        normalizedDistanceVec.x = distanceVec.x / distance;
-        normalizedDistanceVec.y = distanceVec.y / distance;
+        normalizedDistanceVec.x = directionVec.x / distance;
+        normalizedDistanceVec.y = directionVec.y / distance;
 
         enemy->coords.x += normalizedDistanceVec.x * moveDistance;
         enemy->coords.y += normalizedDistanceVec.y * moveDistance;
     }
 }
 
-void renderEnemy(Enemy* enemy, SDL_Renderer* renderer, const Paths* paths, const float deltaTime, SDL_Texture* texture) {
-    const Vec2* path = NULL;
-    switch (enemy->location) {
-        case LOCATION_TOP:
-            path = paths->topPath;
-            break;
-        case LOCATION_LAKE:
-            path = paths->lakePath;
-            break;
-        case LOCATION_BOTTOM:
-            path = paths->bottomPath;
-            break;
-    }
-
+void renderEnemy(Enemy *enemy, SDL_Renderer *renderer, SDL_Texture *texture) {
     SDL_Rect srcRect;
     srcRect.x = 0;
     srcRect.y = 0;
     srcRect.w = 64;
     srcRect.h = 64;
 
-    SDL_Rect fillRect = {(int)enemy->coords.x, (int)enemy->coords.y, 128, 128};
+    SDL_Rect fillRect = {(int) enemy->coords.x, (int) enemy->coords.y, 128, 128};
 
     SDL_RenderFillRect(renderer, &fillRect);
     SDL_RenderCopy(renderer, texture, &srcRect, &fillRect);
 }
 
-void setPaths(Paths* paths) {
+void setPaths(Paths *paths) {
     paths->topPath = malloc(sizeof(Vec2) * TOP_PATH_LENGTH);
     for (int i = 0; i < TOP_PATH_LENGTH; ++i) {
         paths->topPath[i] = TOP_PATH_POINTS[i];
@@ -95,20 +84,40 @@ void setPaths(Paths* paths) {
         paths->bottomPath[i] = BOTTOM_PATH_POINTS[i];
     }
     paths->bottomLength = BOTTOM_PATH_LENGTH;
-
 }
 
-void freePaths(const Paths* paths) {
-    free(paths->topPath);
-    free(paths->lakePath);
-    free(paths->bottomPath);
-}
-
-void freeEnemy(Enemy* enemy) {
-    if (enemy) {
-        free(enemy);
+void freePaths(Paths *paths) {
+    if (paths->topPath) {
+        LOG_DEBUG("Destryoed topPath\n");
+        free(paths->topPath);
+        paths->topPath = NULL;
+    } else {
+        LOG_ERROR("Trying to free topPath pointer\n");
     }
-    else {
+
+    if (paths->lakePath) {
+        LOG_DEBUG("Destryoed lakePath\n");
+        free(paths->lakePath);
+        paths->lakePath = NULL;
+    } else {
+        LOG_ERROR("Trying to free lakePath pointer\n");
+    }
+
+    if (paths->bottomPath) {
+        LOG_DEBUG("Destryoed bottomPath\n");
+        free(paths->bottomPath);
+        paths->bottomPath = NULL;
+    } else {
+        LOG_ERROR("Trying to free bottomPath pointer\n");
+    }
+}
+
+void freeEnemy(Enemy *enemy) {
+    if (enemy) {
+        LOG_DEBUG("Destryoed enemy\n");
+        free(enemy);
+        enemy = NULL;
+    } else {
         LOG_ERROR("Trying to free NULL enemy pointer\n");
     }
 }

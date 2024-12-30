@@ -4,6 +4,8 @@
 
 #include "tmx.h"
 
+struct Game;
+
 typedef struct {
     unsigned int x, y;
     unsigned int dx,dy;

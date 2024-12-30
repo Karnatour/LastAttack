@@ -6,20 +6,20 @@
 #include "Logger.h"
 
 //I really dont like this idea but tmx library force me to do it
-static SDL_Renderer* mapRenderer = NULL;
+static SDL_Renderer *mapRenderer = NULL;
 
-void initMapLoader(Game* game) {
+void initMapLoader(Game *game) {
     mapRenderer = game->renderer;
     tmx_img_load_func = mapTexLoadFun;
-    tmx_img_free_func = (void (*)(void*))SDL_DestroyTexture;
+    tmx_img_free_func = (void (*)(void *)) SDL_DestroyTexture;
 }
 
-void* mapTexLoadFun(const char* path) {
+void *mapTexLoadFun(const char *path) {
     return IMG_LoadTexture(mapRenderer, path);
 }
 
-tmx_map* loadMap(const char* path) {
-    tmx_map* map = NULL;
+tmx_map *loadMap(const char *path) {
+    tmx_map *map = NULL;
     map = tmx_load(path);
     if (!map) {
         LOG_ERROR("Cannot load map: %s\n", tmx_strerr());
@@ -28,19 +28,23 @@ tmx_map* loadMap(const char* path) {
     return map;
 }
 
-void freeMap(Map* map) {
-    for (int i = 0; i < map->tileIndex; ++i) {
-        free(&map->tiles[i]);
+void freeMap(Map *map) {
+    if (map) {
+        free(map->tiles);
+        tmx_map_free(map->tmxMap);
+        map = NULL;
+        LOG_DEBUG("Destryoed map\n");
+    } else {
+        LOG_ERROR("Trying to free NULL map pointer\n");
     }
-    tmx_map_free(map->tmxMap);
 }
 
-void renderMap(Map* map, SDL_Renderer* renderer, const float deltaTime) {
+void renderMap(Map *map, SDL_Renderer *renderer, const float deltaTime) {
     static bool firstRender = true;
     static float animationTimer = 0.0f;
     const float frameDuration = 0.150f;
 
-    const tmx_col_bytes colorBytes = convertColorToBytes((int)map->tmxMap->backgroundcolor);
+    const tmx_col_bytes colorBytes = convertColorToBytes((int) map->tmxMap->backgroundcolor);
     SDL_SetRenderDrawColor(renderer, colorBytes.r, colorBytes.g, colorBytes.b, colorBytes.a);
 
     if (firstRender) {
@@ -65,7 +69,7 @@ void renderMap(Map* map, SDL_Renderer* renderer, const float deltaTime) {
     }
 }
 
-void loadAndCacheTiles(Map* map, const tmx_layer* layerList) {
+void loadAndCacheTiles(Map *map, const tmx_layer *layerList) {
     while (layerList != NULL) {
         switch (layerList->type) {
             case L_GROUP:
@@ -81,10 +85,10 @@ void loadAndCacheTiles(Map* map, const tmx_layer* layerList) {
     }
 }
 
-void loadLayer(Map* map, const tmx_layer* layer) {
+void loadLayer(Map *map, const tmx_layer *layer) {
     for (int i = 0; i < map->tmxMap->height; ++i) {
         for (int j = 0; j < map->tmxMap->width; ++j) {
-            Tile* tile = &map->tiles[map->tileIndex];
+            Tile *tile = &map->tiles[map->tileIndex];
             const unsigned int index = getIndex(i, j, map->tmxMap->width);
             tile->gid = layer->content.gids[index];
             tile->gridID = tile->gid & TMX_FLIP_BITS_REMOVAL;
@@ -101,8 +105,7 @@ void loadLayer(Map* map, const tmx_layer* layer) {
                     tile->animLength = map->tmxMap->tiles[tile->gridID]->animation_len;
                     tile->tileID = map->tmxMap->tiles[tile->gridID]->animation[tile->currentAnimIndex].tile_id;
                     tile->texture = map->tmxMap->tiles[tile->gridID]->tileset->image->resource_image;
-                }
-                else {
+                } else {
                     tile->animated = false;
                     tile->animLength = 0;
                     tile->texture = map->tmxMap->tiles[tile->gridID]->tileset->image->resource_image;
@@ -115,7 +118,7 @@ void loadLayer(Map* map, const tmx_layer* layer) {
 }
 
 
-void updateAnimatedTile(Map* map, Tile* tile) {
+void updateAnimatedTile(Map *map, Tile *tile) {
     tile->currentAnimIndex = (tile->currentAnimIndex + 1) % tile->animLength;
 
     const unsigned int tileID = map->tmxMap->tiles[tile->gridID]->animation[tile->currentAnimIndex].tile_id;
@@ -124,44 +127,43 @@ void updateAnimatedTile(Map* map, Tile* tile) {
     tile->y = map->tmxMap->tiles[tile->gridID]->tileset->tiles[tileID].ul_y;
 }
 
-void renderTile(Tile* tile, SDL_Renderer* renderer) {
+void renderTile(Tile *tile, SDL_Renderer *renderer) {
     SDL_Rect srcRect;
-    srcRect.x = (int)tile->x;
-    srcRect.y = (int)tile->y;
-    srcRect.w = (int)tile->w;
-    srcRect.h = (int)tile->h;
+    srcRect.x = (int) tile->x;
+    srcRect.y = (int) tile->y;
+    srcRect.w = (int) tile->w;
+    srcRect.h = (int) tile->h;
 
     SDL_Rect destRect;
-    destRect.x = (int)(tile->dx * tile->w * 2);
-    destRect.y = (int)(tile->dy * tile->h * 2);
-    destRect.w = (int)tile->w * 2;
-    destRect.h = (int)tile->h * 2;
+    destRect.x = (int) (tile->dx * tile->w * 2);
+    destRect.y = (int) (tile->dy * tile->h * 2);
+    destRect.w = (int) tile->w * 2;
+    destRect.h = (int) tile->h * 2;
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     double angle = 0.0;
 
     if (tile->gid & TMX_FLIPPED_HORIZONTALLY) {
-        flip = (SDL_RendererFlip)(flip | SDL_FLIP_HORIZONTAL);
+        flip = (SDL_RendererFlip) (flip | SDL_FLIP_HORIZONTAL);
     }
     if (tile->gid & TMX_FLIPPED_VERTICALLY) {
-        flip = (SDL_RendererFlip)(flip | SDL_FLIP_VERTICAL);
+        flip = (SDL_RendererFlip) (flip | SDL_FLIP_VERTICAL);
     }
 
     if (tile->gid & TMX_FLIPPED_DIAGONALLY) {
         if (tile->gid & TMX_FLIPPED_VERTICALLY) {
             angle = 270;
-        }
-        else {
+        } else {
             angle = 90;
         }
         flip = SDL_FLIP_NONE;
     }
-    SDL_RenderCopyEx(renderer, (SDL_Texture*)tile->texture, &srcRect, &destRect, angle, NULL, flip);
+    SDL_RenderCopyEx(renderer, (SDL_Texture *) tile->texture, &srcRect, &destRect, angle, NULL, flip);
 }
 
 
 int getIndex(const int i, const int j, const unsigned int width) {
-    return (i * (int)width) + j;
+    return (i * (int) width) + j;
 }
 
 tmx_col_bytes convertColorToBytes(const int color) {
@@ -169,6 +171,6 @@ tmx_col_bytes convertColorToBytes(const int color) {
     return byteColor;
 }
 
-void getRendererColor(SDL_Renderer* renderer, Uint8* r, Uint8* g, Uint8* b, Uint8* a) {
+void getRendererColor(SDL_Renderer *renderer, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a) {
     SDL_GetRenderDrawColor(renderer, r, g, b, a);
 }

@@ -8,6 +8,7 @@
 
 #include "Enemy.h"
 #include "MapLoader.h"
+#include "Towers.h"
 
 struct EventHandler;
 
@@ -18,11 +19,13 @@ typedef struct Game {
     EventHandler eventHandler;
     //TODO: Probably move KeyCallback to Callback handler
     KeyCallback onKeyPressed;
+    MouseCallback onMousePressed;
     //TODO: Create Time struct
     float deltaTime;
     Uint64 last;
     Map map;
     Paths paths;
+    Tower towers[5];
 } Game;
 
 Game *allocateGame();
