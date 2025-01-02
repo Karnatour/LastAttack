@@ -4,8 +4,8 @@
 
 #include "Config.h"
 #include "Logger.h"
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL.h>
+#include <SDL_image.h>
 SDL_Window *createWindow() {
     SDL_Window *window = SDL_CreateWindow("Last attack", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {

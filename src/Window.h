@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SDL_video.h"
-#include "SDL_render.h"
+#include <SDL_video.h>
+#include <SDL_render.h>
 
 void initSDL();
 SDL_Window * createWindow();

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Events.h"
-#include "SDL_render.h"
-#include "SDL_video.h"
+#include <SDL_render.h>
+#include <SDL_video.h>
 #include "Callbacks/InputCallbacks.h"
 #include <stdbool.h>
 
