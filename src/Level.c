@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include "Font.h"
+#include "Game.h"
 #include "Logger.h"
 #include "Texture.h"
 #include "Towers.h"
@@ -30,57 +31,8 @@ void initLevel(SDL_Renderer* renderer, Level* level) {
     level->coinValueTexture = NULL;
 
     level->currentWave = 1;
-    loadWaves(level->waves);
+    loadWaves(renderer, level->waves);
 }
-
-void loadWaves(Wave* waves) {
-    const SpawnLocation spawnLocations[] = {LOCATION_TOP, LOCATION_LAKE, LOCATION_BOTTOM};
-    const Vec2 spawnPoints[] = {TOP_SPAWN_POINT, LAKE_SPAWN_POINT, BOTTOM_SPAWN_POINT};
-    const int numLocations = 3;
-    const float spawnDelays[] = {0.5f, 0.25f, 0.125f};
-
-    //5,25,125 enemies
-    for (int i = 0; i < 3; ++i) {
-        int numEnemies = pow(5, i);
-        waves[i].numEnemies = numEnemies;
-        waves[i].numAliveEnemies = numEnemies;
-        waves[i].spawnDelay = spawnDelays[i];
-        waves[i].timeSinceLastSpawn = 0.0f;
-
-        for (int j = 0; j < numEnemies; ++j) {
-            // Alternate spawn location every 5 enemies
-            const int locationIndex = (j / 5) % numLocations;
-
-            waves[i].enemies[j] = createEnemy(
-                spawnLocations[locationIndex],
-                spawnPoints[locationIndex].x,
-                spawnPoints[locationIndex].y,
-                100.0f + i * 50,
-                50.0f + i * 25.0f
-            );
-            waves[i].enemies[j]->active = false; // Inactive until it's time to spawn
-        }
-    }
-}
-
-void updateWave(Wave* wave, float deltaTime) {
-    wave->timeSinceLastSpawn += deltaTime;
-
-    for (int i = 0; i < wave->numEnemies; ++i) {
-        // Check if the enemy is inactive and the spawn timer has passed the delay
-        if (!wave->enemies[i]->active && wave->timeSinceLastSpawn >= wave->spawnDelay) {
-            wave->enemies[i]->active = true;
-            wave->timeSinceLastSpawn = 0.0f;
-
-            // Spawn only one enemy at a time
-            break;
-        }
-    }
-}
-
-void nextWave() {
-}
-
 
 void renderUI(SDL_Renderer* renderer, const Level* level) {
     SDL_RenderCopy(renderer, level->heartTexture,NULL, &level->heartRect);
@@ -105,4 +57,43 @@ void destroyLevel(Level* level) {
     destroyTexture(level->heartValueTexture);
     destroyTexture(level->coinValueTexture);
     destroyTexture(level->heartTexture);
+}
+
+void endLevel(EndingType endingType, struct Game* game) {
+    switch (endingType) {
+        case VICTORY:
+            SDL_Rect victoryRect;
+            SDL_Texture* victoryTexture = createMessageTexture(game->renderer, "assets/gui/fonts/OpenSans-Regular.ttf", 256, "Victory!", 25, 255, 25, &victoryRect);
+            victoryRect.x = SCREEN_WIDTH / 2 - victoryRect.w / 2;
+            victoryRect.y = SCREEN_HEIGHT / 2 - victoryRect.h / 2;
+            SDL_RenderCopy(game->renderer, victoryTexture,NULL, &victoryRect);
+            break;
+        case DEFEAT:
+            SDL_Rect defeatRect;
+            SDL_Texture* defeatTexture = createMessageTexture(game->renderer, "assets/gui/fonts/OpenSans-Regular.ttf", 256, "Defeat!", 255, 25, 25, &defeatRect);
+            defeatRect.x = SCREEN_WIDTH / 2 - defeatRect.w / 2;
+            defeatRect.y = SCREEN_HEIGHT / 2 - defeatRect.h / 2;
+            SDL_RenderCopy(game->renderer, defeatTexture,NULL, &defeatRect);
+            break;
+    }
+    game->state = MAINMENU;
+    SDL_RenderPresent(game->renderer);
+    SDL_Delay(3000);
+    prepareForNextLevel(game);
+}
+
+void prepareForNextLevel(struct Game* game) {
+    clearTowerArray(game->towers);
+    clearLevel(&game->level);
+
+    initTowerArray(game->renderer, game->towers);
+    initLevel(game->renderer, &game->level);
+}
+
+void clearLevel(Level* level) {
+    clearWaves(level->waves);
+    destroyTexture(level->coinTexture);
+    destroyTexture(level->heartTexture);
+    destroyTexture(level->coinValueTexture);
+    destroyTexture(level->heartValueTexture);
 }

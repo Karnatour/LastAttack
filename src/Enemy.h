@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL_render.h>
+#include <stdbool.h>
 
 #include "Utils.h"
 
@@ -24,7 +25,11 @@ typedef struct {
     Direction direction;
     float hp;
     float speed;
-    int active;
+    float originalSpeed;
+    bool active;
+    bool reachedEnd;
+    bool poisoned;
+    float poisonedTimer;
     SpawnLocation location;
 } Enemy;
 
@@ -41,7 +46,7 @@ typedef struct {
 } Paths;
 
 Enemy* createEnemy(SpawnLocation spawnLocation, float x, float y, float hp, float speed);
-void moveEnemy(Enemy* enemy, const Vec2* path, float deltaTime, int* hp);
+void moveEnemy(Enemy* enemy, const Vec2* path, float deltaTime, int* hp, int* numAliveEnemies);
 void renderEnemy(Enemy* enemy, SDL_Renderer* renderer, SDL_Texture* texture);
 void setPaths(Paths* paths);
 void freeEnemy(Enemy* enemy);

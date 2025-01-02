@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "Config.h"
 #include "Logger.h"
+#include "Texture.h"
 
 
 Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, const float hp, const float speed) {
@@ -11,9 +12,10 @@ Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, co
     Enemy* enemy = NULL;
     enemy = (Enemy*)malloc(sizeof(Enemy));
     enemy->active = true;
+    enemy->reachedEnd = false;
     enemy->pathIndex = 0;
     enemy->hp = hp;
-    enemy->speed = speed;
+    enemy->speed = enemy->originalSpeed = speed;
     enemy->coords.x = x;
     enemy->coords.y = y;
     enemy->rect.x = (int)x;
@@ -21,6 +23,8 @@ Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, co
     enemy->rect.w = 128;
     enemy->rect.h = 128;
     enemy->id = id;
+    enemy->poisoned = false;
+    enemy->poisonedTimer = 0.0f;
     ++id;
     //TODO: Set direction by spawn
     enemy->location = spawnLocation;
@@ -38,10 +42,12 @@ Enemy* createEnemy(SpawnLocation spawnLocation, const float x, const float y, co
     return enemy;
 }
 
-void moveEnemy(Enemy* enemy, const Vec2* path, const float deltaTime, int* hp) {
+void moveEnemy(Enemy* enemy, const Vec2* path, const float deltaTime, int* hp, int* numAliveEnemies) {
     if (fabsf(enemy->coords.x - CAPITOL_LOCATION.x) <= 10 && fabsf(enemy->coords.y - CAPITOL_LOCATION.y) <= 10) {
         enemy->active = false;
+        enemy->reachedEnd = true;
         *hp = *hp - 1;
+        *numAliveEnemies = *numAliveEnemies - 1;
     }
     Vec2 target = path[enemy->pathIndex];
     Vec2 directionVec;
@@ -129,7 +135,7 @@ void freePaths(Paths* paths) {
 
 void freeEnemy(Enemy* enemy) {
     if (enemy) {
-        LOG_DEBUG("Destryoed enemy\n");
+        LOG_DEBUG("Destryoed enemy with ID %d\n",enemy->id);
         free(enemy);
         enemy = NULL;
     }

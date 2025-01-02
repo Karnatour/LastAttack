@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 project(BreakoutProject C)
 
 set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -g")
 
 add_executable(LastAttack
         src/Game.c
@@ -33,6 +34,8 @@ add_executable(LastAttack
         src/Font.h
         src/Level.c
         src/Level.h
+        src/MainMenu.c
+        src/MainMenu.h
 )
 
 
@@ -63,7 +66,7 @@ endif ()
 target_include_directories(LastAttack PRIVATE ${SDL2_INCLUDE_DIRS})
 
 if (UNIX)
-    target_link_libraries(LastAttack PRIVATE SDL2::Main SDL2::Image SDL2::GFX tmx m)
+    target_link_libraries(LastAttack PRIVATE SDL2::Main SDL2::Image SDL2::TTF SDL2::GFX tmx m)
 elseif (MSVC)
     target_link_libraries(LastAttack PRIVATE SDL2::SDL2 SDL2::SDL2main SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2::SDL2_gfx tmx)
 endif ()

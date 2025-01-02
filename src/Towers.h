@@ -56,8 +56,8 @@ typedef struct {
     float fireRate;
     float range;
 
-    int bonusMovementReduction; // ICE % value 0-100
-    int bonusDamage; // POISON
+    float bonusMovementReduction;
+    float bonusDamage; // POISON
 
     bool clicked;
     bool hovered;
@@ -95,6 +95,7 @@ void handleTowerHover(SDL_Point point, Tower* tower);
 
 void setTowerValuesByType(SDL_Renderer *renderer, Tower *tower, TowerType towerType);
 
+void clearTowerArray(Tower *towers);
 void destroyTowerBuyMenuTex(TowerBuyMenu *menu);
-void destroyTowerUpgradeMenu(TowerUpgradeMenu *menu);
+void destroyTowerUpgradeMenuTex(TowerUpgradeMenu *menu);
 void destroyTowersTex(Tower *towers);

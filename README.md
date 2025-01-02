@@ -34,7 +34,7 @@ On **Windows**, you can use **vcpkg** to install the necessary libraries:
 On **Linux** (specifically tested on Ubuntu or WSL Ubuntu), install the required libraries:
 
 ```shell
-sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-gfx-dev
+sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-gfx-dev libxml2-dev
 ```
 
 ## 2. Clone or Extract the Game Source

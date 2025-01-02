@@ -24,14 +24,21 @@ void mousePressed(int x, int y, struct Game* game) {
     point.x = x;
     point.y = y;
 
-    for (int i = 0; i < 5; ++i) {
-        handleTowerClick(game->renderer, &game->towers[i].buyMenu, &game->towers[i], point);
-        if (!game->towers[i].occupied && game->towers[i].clicked) {
-            handleTowerBuyMenuClick(game->renderer, &game->towers[i], point, &game->level.coins);
-        }
-        else if (game->towers[i].occupied && game->towers[i].clicked) {
-            handleTowerUpgradeMenuClick(&game->towers[i], point, &game->level.coins);
-        }
+    switch (game->state) {
+        case INGAME:
+            for (int i = 0; i < 5; ++i) {
+                handleTowerClick(game->renderer, &game->towers[i].buyMenu, &game->towers[i], point);
+                if (!game->towers[i].occupied && game->towers[i].clicked) {
+                    handleTowerBuyMenuClick(game->renderer, &game->towers[i], point, &game->level.coins);
+                }
+                else if (game->towers[i].occupied && game->towers[i].clicked) {
+                    handleTowerUpgradeMenuClick(&game->towers[i], point, &game->level.coins);
+                }
+            }
+            break;
+        case MAINMENU:
+            handleMainMenuClick(game, point);
+            break;
     }
 }
 

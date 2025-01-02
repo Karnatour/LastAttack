@@ -1,7 +1,6 @@
 #include <SDL.h>
 #include "Game.h"
 
-#include <SDL2_gfxPrimitives.h>
 #include <SDL_image.h>
 #include <stdbool.h>
 
@@ -15,10 +14,6 @@
 #include "Window.h"
 
 SDL_Texture* temp;
-Enemy* enemyTest = NULL;
-Enemy* enemyTest2 = NULL;
-Enemy* enemyTest3 = NULL;
-Wave wave;
 
 Game* allocateGame() {
     Game* game = malloc(sizeof(Game));
@@ -33,31 +28,27 @@ Game* allocateGame() {
 }
 
 void initGame(Game* game) {
+    game->isRunning = true;
+
     SDL_SetMainReady();
-    assignCallbacks(game);
     initSDL();
-    game->toggleVision = false;
     game->window = createWindow();
     game->renderer = createRenderer(game->window);
-    game->isRunning = true;
-    game->time.deltaTime = 0;
-    game->time.last = SDL_GetPerformanceCounter();
-    LOG_INFO("----------Game initialized------------\n");
-    initTowerArray(game->renderer, game->towers);
-    setPaths(&game->paths);
-    temp = createAndLoadTexture(game->renderer, "../assets/orc1_walk_full.png");
-    SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
-    initLevel(game->renderer, &game->level);
-    enemyTest = createEnemy(LOCATION_TOP, TOP_SPAWN_POINT.x, TOP_SPAWN_POINT.y, 100.0f, 50.0f);
-    enemyTest2 = createEnemy(LOCATION_LAKE, LAKE_SPAWN_POINT.x, LAKE_SPAWN_POINT.y, 100.0f, 150.0f);
-    enemyTest3 = createEnemy(LOCATION_BOTTOM, BOTTOM_SPAWN_POINT.x, BOTTOM_SPAWN_POINT.y, 100.0f, 100.0f);
-    wave.enemies[0] = enemyTest;
-    wave.enemies[1] = enemyTest2;
-    wave.enemies[2] = enemyTest3;
-    wave.numEnemies = wave.numAliveEnemies = 3;
-    wave.texture = temp;
+
+    assignCallbacks(game);
+    initTime(&game->time);
+
+    initMainMenu(game->renderer, &game->mainMenu);
     initMapLoader(game);
+    initTowerArray(game->renderer, game->towers);
+    initLevel(game->renderer, &game->level);
+    setPaths(&game->paths);
+
     game->map.tmxMap = loadMap("Tiled_files/Undead_land.tmx");
+
+    game->toggleVision = false;
+    game->state = MAINMENU;
+    LOG_INFO("----------Game initialized------------\n");
 }
 
 void runGame(Game* game) {
@@ -68,24 +59,58 @@ void runGame(Game* game) {
     SDL_RenderClear(game->renderer);
 
     updateTime(&game->time);
-
-    if (enemyTest->pathIndex < TOP_PATH_LENGTH && enemyTest->active) {
-        moveEnemy(enemyTest, game->paths.topPath, game->time.deltaTime, &game->level.hp);
-    }
-    if (enemyTest2->pathIndex < LAKE_PATH_LENGTH && enemyTest2->active) {
-        moveEnemy(enemyTest2, game->paths.lakePath, game->time.deltaTime, &game->level.hp);
-    }
-    if (enemyTest3->pathIndex < BOTTOM_PATH_LENGTH && enemyTest3->active) {
-        moveEnemy(enemyTest3, game->paths.bottomPath, game->time.deltaTime, &game->level.hp);
-    }
     renderMap(&game->map, game->renderer, game->time.deltaTime);
 
-    renderWave(game->renderer,&wave);
+    switch (game->state) {
+        case INGAME:
+            renderGame(game);
+            break;
+        case MAINMENU:
+            renderMainMenu(game);
+            break;
+    }
+
+    SDL_RenderPresent(game->renderer);
+}
+
+void exitGame(Game* game) {
+    if (game->isRunning) {
+        LOG_WARNING("Trying to exit game while still in running state,aborting...\n");
+        return;
+    }
+    destroyRenderer(game->renderer);
+    destroyWindow(game->window);
+
+    clearTowerArray(game->towers);
+    clearWaves(game->level.waves);
+    freeMap(&game->map);
+    freePaths(&game->paths);
+    freeGame(game);
+
+    IMG_Quit();
+    TTF_Quit();
+    SDL_Quit();
+}
+
+void freeGame(Game* game) {
+    free(game);
+    LOG_INFO("[DEALLOCATION] 1/1 Released memory of game struct\n");
+}
+
+void assignCallbacks(Game* game) {
+    game->onKeyPressed = keyPressed;
+    game->onMousePressed = mousePressed;
+    game->onMouseMoved = mouseMoved;
+}
+
+void renderGame(Game* game) {
+    updateWave(&game->level.waves[game->level.currentWave - 1], game->paths, game->time.deltaTime, &game->level.hp, &game->level.hp);
+    renderWave(game->renderer, &game->level.waves[game->level.currentWave - 1]);
 
     for (int i = 0; i < 5; ++i) {
         if (game->towers[i].occupied) {
             renderTower(game->renderer, &game->towers[i]);
-            handleTowerProjectiles(&game->towers[i], &wave, game->time.deltaTime, game->renderer,&game->level);
+            handleTowerProjectiles(&game->towers[i], &game->level.waves[game->level.currentWave - 1], game->time.deltaTime, game->renderer, &game->level);
         }
 
         if (game->towers[i].clicked && !game->towers[i].occupied) {
@@ -100,46 +125,27 @@ void runGame(Game* game) {
         }
     }
 
+
     char message[16];
     sprintf(message, "%d", game->level.hp);
-    SDL_Texture *heartTexture = createMessageTexture(game->renderer,"assets/gui/fonts/OpenSans-Regular.ttf",80,message,255,25,25,&game->level.heartValueRect);
+    SDL_Texture* heartTexture = createMessageTexture(game->renderer, "assets/gui/fonts/OpenSans-Regular.ttf", 80, message, 255, 25, 25, &game->level.heartValueRect);
 
     sprintf(message, "%d", game->level.coins);
-    SDL_Texture *coinTexture = createMessageTexture(game->renderer,"assets/gui/fonts/OpenSans-Regular.ttf",80,message,255,255,0,&game->level.coinValueRect);
+    SDL_Texture* coinTexture = createMessageTexture(game->renderer, "assets/gui/fonts/OpenSans-Regular.ttf", 80, message, 255, 255, 0, &game->level.coinValueRect);
 
-    updateUITextures(heartTexture,coinTexture, &game->level);
+    updateUITextures(heartTexture, coinTexture, &game->level);
+    renderUI(game->renderer, &game->level);
 
-    renderUI(game->renderer,&game->level);
-
-    SDL_RenderPresent(game->renderer);
-}
-
-void exitGame(Game* game) {
-    if (game->isRunning) {
-        LOG_WARNING("Trying to exit game while still in running state,aborting...\n");
-        return;
+    if (game->level.waves[game->level.currentWave - 1].numAliveEnemies == 0) {
+        if (game->level.currentWave != 3) {
+            ++game->level.currentWave;
+        }
+        else {
+            endLevel(VICTORY, game);
+        }
     }
-    destroyRenderer(game->renderer);
-    destroyWindow(game->window);
 
-    freeEnemy(enemyTest);
-    freeEnemy(enemyTest2);
-    freeEnemy(enemyTest3);
-    freeMap(&game->map);
-    freePaths(&game->paths);
-    freeGame(game);
-
-    IMG_Quit();
-    SDL_Quit();
-}
-
-void freeGame(Game* game) {
-    free(game);
-    LOG_INFO("[DEALLOCATION] 1/1 Released memory of game struct\n");
-}
-
-void assignCallbacks(Game* game) {
-    game->onKeyPressed = keyPressed;
-    game->onMousePressed = mousePressed;
-    game->onMouseMoved = mouseMoved;
+    if (game->level.hp == 0) {
+        endLevel(DEFEAT, game);
+    }
 }

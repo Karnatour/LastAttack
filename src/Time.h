@@ -6,4 +6,5 @@ typedef struct {
     Uint64 last;
 } Time;
 
+void initTime(Time* time);
 void updateTime(Time* time);

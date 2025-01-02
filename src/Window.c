@@ -33,7 +33,7 @@ SDL_Renderer *createRenderer(SDL_Window *window) {
     else{
         LOG_INFO("[RENDERER] 2/2 Initialized SDL Image\n");
     }
-
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     return renderer;
 }
 

@@ -125,7 +125,7 @@ void handleTowerProjectiles(Tower* tower, Wave* wave, const float deltaTime, SDL
     // Remove enemies that are out of range or dead
     cleanupEnemyQueue(tower, wave);
 
-    // Get next target from queue if tower doesnt have any
+    // Get next target from queue if tower doesn't have any
     if (tower->currentEnemyID == -1) {
         tower->currentEnemyID = getNextEnemyIDFromQueue(tower, wave);
     }
@@ -144,20 +144,48 @@ void handleTowerProjectiles(Tower* tower, Wave* wave, const float deltaTime, SDL
 
         if (distance > tower->range) {
             // Reset the projectile if it is out of range
-            LOG_DEBUG("%f %f\n", distance, tower->range);
             resetProjectilePos(tower);
             tower->currentEnemyID = -1;
         }
         else if (isEnemyHit(tower->projectile, &targetEnemy->rect)) {
             resetProjectilePos(tower);
-            targetEnemy->hp -= tower->damage;
-            if (targetEnemy->hp <= 0) {
-                // Enemy is dead
-                if (wave->numAliveEnemies != 0) {
-                    --wave->numAliveEnemies;
-                    level->coins += 20;
+
+            // Regular damage
+            if (targetEnemy->hp > 0) {
+                targetEnemy->hp -= tower->damage; // Apply regular turret damage
+            }
+
+            // If its poison tower apply poison
+            if (tower->type == POISON) {
+                if (targetEnemy->poisoned == false) {
+                    targetEnemy->poisoned = true;
                 }
-                targetEnemy->active = false;
+            }
+
+            // Apply slow effect if Ice Tower
+            if (tower->type == ICE) {
+                if (targetEnemy->hp > 0 && targetEnemy->originalSpeed == targetEnemy->originalSpeed) {
+                    targetEnemy->speed *= (1.0f - tower->bonusMovementReduction / 100.0f);
+                }
+            }
+            // Check if the enemy is dead
+            if (targetEnemy->hp <= 0 && targetEnemy->active) {
+                targetEnemy->active = false; // Mark as inactive
+
+                // Decrement kill count and add coins
+                if (wave->numAliveEnemies > 0) {
+                    --wave->numAliveEnemies;
+                    level->coins += 20; // Reward coins
+                }
+
+                // Reset current target
+                tower->currentEnemyID = getNextEnemyIDFromQueue(tower, wave);
+
+            }
+        }
+        else {
+            // If turret becomes stuck on a dead enemy
+            if (targetEnemy->active == false) {
                 tower->currentEnemyID = getNextEnemyIDFromQueue(tower, wave);
             }
         }
@@ -165,9 +193,13 @@ void handleTowerProjectiles(Tower* tower, Wave* wave, const float deltaTime, SDL
         renderProjectile(renderer, tower->projectile, tower->type);
     }
     else {
+        // No valid target, reset the target and search for the next one
         tower->currentEnemyID = -1;
     }
+
 }
+
+
 
 
 void renderTowerBuyMenu(SDL_Renderer* renderer, TowerBuyMenu* menu) {
@@ -298,6 +330,14 @@ void setTowerValuesByType(SDL_Renderer* renderer, Tower* tower, TowerType towerT
         case NOT_SPAWNED:
             LOG_WARNING("setTowerValuesByType called for NOT_SPAWNED tower\n");
             break;
+    }
+}
+
+void clearTowerArray(Tower* towers) {
+    for (int i = 0; i < 5; ++i) {
+        destroyTowerBuyMenuTex(&towers[i].buyMenu);
+        destroyTowerUpgradeMenuTex(&towers[i].upgradeMenu);
+        destroyTexture(towers[i].texture);
     }
 }
 
@@ -450,7 +490,7 @@ void renderProjectile(SDL_Renderer* renderer, Vec2 projectilePos, TowerType type
     SDL_RenderFillRect(renderer, &projectileRect);
 }
 
-void destroyTowerUpgradeMenu(TowerUpgradeMenu* menu) {
+void destroyTowerUpgradeMenuTex(TowerUpgradeMenu* menu) {
     if (menu) {
         destroyTexture(menu->damageTex);
         destroyTexture(menu->fireRateTex);

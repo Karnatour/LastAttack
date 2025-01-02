@@ -1,4 +1,6 @@
 #pragma once
+#include <stdbool.h>
+
 #include "Enemy.h"
 
 typedef struct {
@@ -11,4 +13,6 @@ typedef struct {
 } Wave;
 
 void renderWave(SDL_Renderer* renderer, const Wave *wave);
-void updateWave(Wave* wave, float deltaTime);
+void updateWave(Wave* wave, Paths paths, float deltaTime, int* levelHp, int* coins);
+void loadWaves(SDL_Renderer* renderer, Wave *waves);
+void clearWaves(Wave *waves);

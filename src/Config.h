@@ -31,7 +31,7 @@ static const Vec2 TOP_PATH_POINTS[] = {
 static const int TOP_PATH_LENGTH = 22;
 
 static const Vec2 TOP_SPAWN_POINT = {
-        .x = 165.0, .y = 0.0f
+        .x = 165.0, .y = -10.0f
 };
 
 static const Vec2 LAKE_PATH_POINTS[] = {
@@ -59,7 +59,7 @@ static const Vec2 LAKE_PATH_POINTS[] = {
 static const int LAKE_PATH_LENGTH = 20;
 
 static const Vec2 LAKE_SPAWN_POINT = {
-        .x = 325.0f, .y = 900.0f
+        .x = 325.0f, .y = 910.0f
 };
 
 static const Vec2 BOTTOM_PATH_POINTS[] = {
@@ -84,7 +84,7 @@ static const Vec2 BOTTOM_PATH_POINTS[] = {
 static const int BOTTOM_PATH_LENGTH = 17;
 
 static const Vec2 BOTTOM_SPAWN_POINT = {
-        .x = 1600.0f, .y = 795.0f
+        .x = 1610.0f, .y = 795.0f
 };
 
 static const Vec2 TOWER_LOCATIONS[] = {
@@ -100,3 +100,4 @@ static const Vec2 CAPITOL_LOCATION = {1440.0f,400.0f};
 static const int HP = 5;
 static const int SCREEN_WIDTH = 1600;
 static const int SCREEN_HEIGHT = 900;
+static const float POISON_DAMAGE = 10.0f;

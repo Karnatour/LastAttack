@@ -3,6 +3,13 @@
 
 #include "Wave.h"
 
+struct Game;
+
+typedef enum {
+    VICTORY,
+    DEFEAT
+} EndingType;
+
 typedef struct {
     int hp;
     int coins;
@@ -24,5 +31,6 @@ void initLevel(SDL_Renderer* renderer, Level* level);
 void renderUI(SDL_Renderer* renderer, const Level* level);
 void updateUITextures(SDL_Texture* newHeartTexture, SDL_Texture* newCoinTexture, Level* level);
 void destroyLevel(Level* level);
-void loadWaves(Wave *waves);
-void nextWave();
+void endLevel(EndingType endingType, struct Game* game);
+void prepareForNextLevel(struct Game* game);
+void clearLevel(Level* level);
