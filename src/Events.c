@@ -21,13 +21,14 @@ void handleEvent(Game* game) {
             break;
         case SDL_MOUSEMOTION:
             //LOG_DEBUG("Recived EVENT: SDL_MOUSEMOTION X:%d Y:%d\n",game->eventHandler.event.motion.x,game->eventHandler.event.motion.y);
+            game->onMouseMoved(game->eventHandler.event.motion.x, game->eventHandler.event.motion.y, game);
             break;
         case SDL_MOUSEBUTTONUP:
             //LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTONUP BUTTON: %d\n",game->eventHandler.event.button.button);
-            game->onMousePressed(game->eventHandler.event.motion.x,game->eventHandler.event.motion.y,game);
+            game->onMousePressed(game->eventHandler.event.motion.x, game->eventHandler.event.motion.y, game);
             break;
         case SDL_MOUSEBUTTONDOWN:
-            LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTDOWN BUTTON: %d\n",game->eventHandler.event.button.button);
+            //LOG_DEBUG("Recived EVENT: SDL_MOUSEBUTTDOWN BUTTON: %d\n", game->eventHandler.event.button.button);
             break;
     }
 }

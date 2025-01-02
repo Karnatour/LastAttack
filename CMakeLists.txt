@@ -25,16 +25,34 @@ add_executable(LastAttack
         src/Config.h
         src/Towers.c
         src/Towers.h
+        src/Wave.c
+        src/Wave.h
+        src/Time.c
+        src/Time.h
+        src/Font.c
+        src/Font.h
+        src/Level.c
+        src/Level.h
 )
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_gfx REQUIRED)
+if (UNIX)
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
+    add_subdirectory(tmx-tmx_1.10.0)
+endif (UNIX)
 
-add_subdirectory(tmx-tmx_1.10.0)
+if (UNIX)
+    find_package(SDL2 REQUIRED)
+    find_package(SDL2_image REQUIRED)
+    find_package(SDL2_ttf REQUIRED)
+    find_package(SDL2_gfx REQUIRED)
+elseif (MSVC)
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(SDL2_image CONFIG REQUIRED)
+    find_package(SDL2_ttf CONFIG REQUIRED)
+    find_package(sdl2-gfx CONFIG REQUIRED)
+    find_package(tmx CONFIG REQUIRED)
+endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
@@ -43,7 +61,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 
 target_include_directories(LastAttack PRIVATE ${SDL2_INCLUDE_DIRS})
-target_link_libraries(LastAttack PRIVATE
-        SDL2::Main SDL2::Image SDL2::GFX tmx m
-)
 
+if (UNIX)
+    target_link_libraries(LastAttack PRIVATE SDL2::Main SDL2::Image SDL2::GFX tmx m)
+elseif (MSVC)
+    target_link_libraries(LastAttack PRIVATE SDL2::SDL2 SDL2::SDL2main SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2::SDL2_gfx tmx)
+endif ()
+
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/Tiled_files DESTINATION ${CMAKE_BINARY_DIR})

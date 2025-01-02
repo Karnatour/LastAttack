@@ -17,6 +17,7 @@ typedef enum {
 } SpawnLocation;
 
 typedef struct {
+    int id;
     SDL_Rect rect;
     Vec2 coords;
     int pathIndex;
@@ -40,8 +41,8 @@ typedef struct {
 } Paths;
 
 Enemy* createEnemy(SpawnLocation spawnLocation, float x, float y, float hp, float speed);
-void moveEnemy(Enemy* enemy, const Vec2* path, float deltaTime);
-void renderEnemy(Enemy *enemy, SDL_Renderer *renderer, SDL_Texture *texture);
+void moveEnemy(Enemy* enemy, const Vec2* path, float deltaTime, int* hp);
+void renderEnemy(Enemy* enemy, SDL_Renderer* renderer, SDL_Texture* texture);
 void setPaths(Paths* paths);
 void freeEnemy(Enemy* enemy);
-void freePaths(Paths *paths);
+void freePaths(Paths* paths);

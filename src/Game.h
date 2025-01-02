@@ -7,35 +7,42 @@
 #include <stdbool.h>
 
 #include "Enemy.h"
+#include "Level.h"
 #include "MapLoader.h"
+#include "Time.h"
 #include "Towers.h"
 
 struct EventHandler;
 
 typedef struct Game {
-    SDL_Renderer *renderer;
-    SDL_Window *window;
+    SDL_Renderer* renderer;
+    SDL_Window* window;
     bool isRunning;
+
     EventHandler eventHandler;
-    //TODO: Probably move KeyCallback to Callback handler
     KeyCallback onKeyPressed;
     MouseCallback onMousePressed;
-    //TODO: Create Time struct
-    float deltaTime;
-    Uint64 last;
+    MouseCallback onMouseMoved;
+
+    Time time;
+
     Map map;
+
     Paths paths;
     Tower towers[5];
+    bool toggleVision;
+
+    Level level;
 } Game;
 
-Game *allocateGame();
+Game* allocateGame();
 
-void freeGame(Game *game);
+void freeGame(Game* game);
 
-void initGame(Game *game);
+void initGame(Game* game);
 
-void runGame(Game *game);
+void runGame(Game* game);
 
-void exitGame(Game *game);
+void exitGame(Game* game);
 
-void assignCallbacks(Game *game);
+void assignCallbacks(Game* game);

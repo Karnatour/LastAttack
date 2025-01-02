@@ -1,9 +1,13 @@
 #include "Window.h"
+
+#include <SDL_ttf.h>
+
+#include "Config.h"
 #include "Logger.h"
 #include "SDL.h"
 #include "SDL_image.h"
 SDL_Window *createWindow() {
-    SDL_Window *window = SDL_CreateWindow("Last attack", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1600, 900, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Last attack", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         LOG_ERROR("Unable to create SDL window %s\n", SDL_GetError());
     } else {
@@ -35,9 +39,15 @@ SDL_Renderer *createRenderer(SDL_Window *window) {
 
 void initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
-        LOG_INFO("[SDL] 1/1 SDL Initialized\n");
+        LOG_INFO("[SDL] 1/2 SDL Initialized\n");
     } else {
         LOG_ERROR("Unable to init SDL %s \n", SDL_GetError());
+    }
+    if (TTF_Init() == 0) {
+        LOG_INFO("[SDL] 2/2 SDL TTF Initialized\n");
+    }
+    else {
+        LOG_ERROR("Unable to init SDL TTF %s \n", TTF_GetError());
     }
 }
 

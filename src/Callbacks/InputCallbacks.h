@@ -10,3 +10,4 @@ typedef void (*MouseCallback)(int x, int y, struct Game *game);
 
 void keyPressed(SDL_Keysym key, struct Game *game);
 void mousePressed(int x,int y,struct Game* game);
+void mouseMoved(int x, int y, struct Game* game);

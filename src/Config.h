@@ -95,3 +95,8 @@ static const Vec2 TOWER_LOCATIONS[] = {
         {1280.0f, 350.0f}
 };
 
+static const Vec2 CAPITOL_LOCATION = {1440.0f,400.0f};
+
+static const int HP = 5;
+static const int SCREEN_WIDTH = 1600;
+static const int SCREEN_HEIGHT = 900;
